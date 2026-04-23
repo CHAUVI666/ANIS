@@ -7,7 +7,7 @@ A simple installer for Artix Linux. Supports currently only runit in UEFI mode.
 
 ## Usage
 
-Download anis.sh
+Download install.sh
 `chmod +x ./install.sh`
 `./install.sh`
 
