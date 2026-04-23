@@ -1,23 +1,25 @@
 #!/bin/sh -e
 #
-# A simple installer for Artix Linux
+# ANIS - Artix Neat Installation Script
+# 
+# A fork of artix-installer created by
+# Maxwell Anderson
+# to be used with the runit init system
 #
-# Copyright (c) 2022 Maxwell Anderson
+# Copyright (c) 2026 CHAUVI 
 #
-# This file is part of artix-installer.
-#
-# artix-installer is free software: you can redistribute it and/or modify it
+# ANIS is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# artix-installer is distributed in the hope that it will be useful, but
+# ANIS is distributed in the hope that it will be useful, but
 # WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
 # General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with artix-installer. If not, see <https://www.gnu.org/licenses/>.
+# along with ANIS If not, see <https://www.gnu.org/licenses/>.
 
 confirm_password() {
 	stty -echo
@@ -29,40 +31,50 @@ confirm_password() {
 	echo "$pass2"
 }
 
-# Load keymap
-until grep -q "^#*$LANGCODE\.UTF-8 UTF-8  $" /etc/locale.gen; do
-	printf "Language (en_US, de_DE, etc.): " && read -r LANGCODE
-	[ ! "$LANGCODE" ] && LANGCODE="en_US"
-done
-case "$LANGCODE" in
-"en_GB")
-	MY_KEYMAP="uk"
-	;;
-"en_US")
-	MY_KEYMAP="us"
-	;;
-*)
-	MY_KEYMAP=$(echo "$LANGCODE" | cut -c1-2)
-	;;
-esac
-sudo loadkeys "$MY_KEYMAP"
-
 # Check boot mode
-[ ! -d /sys/firmware/efi ] && printf "Not booted in UEFI mode. Aborting..." && exit 1
+[ ! -d /sys/firmware/efi ] && printf "Not booted in UEFI mode. Aborting...\n" && exit 1
 
-# Choose MY_INIT
-until [ "$MY_INIT" = "openrc" ] || [ "$MY_INIT" = "dinit" ]; do
-	printf "Init system (openrc/dinit): " && read -r MY_INIT
-	[ ! "$MY_INIT" ] && MY_INIT="openrc"
-done
+# Check init system
+[ ! -d /etc/runit ] && printf "wrong init, this script is ONLY for RUNIT!\n" && exit 1
+
+# Language
+LANGCODE="${LANG%%.*}"
+
+# Keymap
+if [ -f /etc/vconsole.conf ]; then
+    source /etc/vconsole.conf
+    MY_KEYMAP="$KEYMAP"
+fi
+
+# Timezone
+LT_PATH=$(realpath /etc/localtime)
+REGION_CITY="${LT_PATH#*zoneinfo/}"
+
+# TODO
+# Init system (for later use... if I'm really going for ALL systems)
+MY_INIT="runit"
 
 # Choose disk
 until [ -b "$MY_DISK" ]; do
-	echo
-	sudo fdisk -l
-	printf "\nWarning: the selected disk will be rewritten.\n"
-	printf "\nDisk to install to (e.g. /dev/sda): " && read -r MY_DISK
+    printf "\nAviable Disks:\n"
+    lsblk -dno NAME,SIZE,MODEL -e 7 | awk '{print "/dev/"$1 " - " $2 " (" $3 " " $4 ") "}'
+    
+    read -p "Which Disk do you want to install Artix on? (eg. /dev/sda): " MY_DISK
+    
+    if [[ -b "$MY_DISK" ]]; then
+        break
+    else
+        printf "Error: '$MY_DISK' is not an option."
+    fi
 done
+
+# Wipe drive warning
+until [ "$CONFIRM" ]; do
+	printf "WARNING: ALL DATA ON $MY_DISK WILL BE WIPED! Continue? (y/N): " && read -r CONFIRM
+	[ ! "$CONFIRM" ] && CONFIRM="n"
+done
+
+[ ! "$CONFIRM" = "y" ] && printf "Installation aborted by user. Nothing was changed.\n" && exit 1
 
 PART1="$MY_DISK"1
 PART2="$MY_DISK"2
@@ -73,58 +85,115 @@ case "$MY_DISK" in
 	;;
 esac
 
-# Swap size
-until (echo "$SWAP_SIZE" | grep -Eq "^[0-9]+$") && [ "$SWAP_SIZE" -gt 0 ] && [ "$SWAP_SIZE" -lt 97 ]; do
-	printf "Size of swap partition in GiB (4): " && read -r SWAP_SIZE
-	[ ! "$SWAP_SIZE" ] && SWAP_SIZE=4
-done
+# Swap size (same as RAM size for hibernation)
+SWAP_SIZE=$(free -m | awk '/^Mem:/ {print int($2/1024 + 0.5)}')
+printf "RAM: ${SWAP_SIZE} GB"
 
-# Choose filesystem
-until [ "$MY_FS" = "btrfs" ] || [ "$MY_FS" = "ext4" ]; do
-	printf "Filesystem (btrfs/ext4): " && read -r MY_FS
-	[ ! "$MY_FS" ] && MY_FS="btrfs"
-done
+# TODO
+# MY_FS="ext4"
 
-# Encrypt or not
-until [ "$ENCRYPTED" ]; do
-	printf "Encrypt? (y/N): " && read -r ENCRYPTED
-	[ ! "$ENCRYPTED" ] && ENCRYPTED="n"
-done
+# TODO
+# ENCRYPTED="n"
 
-if [ "$ENCRYPTED" = "y" ]; then
-	MY_ROOT="/dev/mapper/root"
-	CRYPTPASS=$(confirm_password "encryption password")
-else
-	MY_ROOT=$PART2
-	[ "$MY_FS" = "ext4" ] && MY_ROOT=$PART2
-fi
-
-# Timezone
-until [ -f /usr/share/zoneinfo/"$REGION_CITY" ]; do
-	printf "Region/City (e.g. 'America/Denver'): " && read -r REGION_CITY
-	[ ! "$REGION_CITY" ] && REGION_CITY="America/Denver"
-done
+MY_ROOT=$PART2
 
 # Host
 until [ "$MY_HOSTNAME" ]; do
-	printf "Hostname: " && read -r MY_HOSTNAME
+	printf "\nHostname: " && read -r MY_HOSTNAME
 done
 
 # Users
-ROOT_PASSWORD=$(confirm_password "root password")
+printf "Username: " && read -r USERNAME
+USER_PASSWORD=$(confirm_password "$USERNAME password")
+
+until [ "$SAME_PASS" ]; do
+	printf "Use same password for root? (y/N): " && read -r SAME_PASS
+	[ ! "$SAME_PASS" ] && SAME_PASS="n"
+done
+
+if [ "$SAME_PASS" = "y" ]; then
+	ROOT_PASSWORD=$USER_PASSWORD
+else
+	ROOT_PASSWORD=$(confirm_password "Root password")
+fi
 
 printf "\nDone with configuration. Installing...\n\n"
 
-# Install
-sudo MY_INIT="$MY_INIT" MY_DISK="$MY_DISK" PART1="$PART1" PART2="$PART2" \
-	SWAP_SIZE="$SWAP_SIZE" MY_FS="$MY_FS" ENCRYPTED="$ENCRYPTED" MY_ROOT="$MY_ROOT" \
-	CRYPTPASS="$CRYPTPASS" \
-	./src/installer.sh
+# Partition disk
+printf "label: gpt\n,200M,U\n,,\n" | sfdisk "$MY_DISK"
+mkfs.fat -F 32 "$PART1"
+yes | mkfs.ext4 "$MY_ROOT"
+mount "$MY_ROOT" /mnt
+
+# Create swapfile
+mkdir /mnt/swap
+fallocate -l "$SWAP_SIZE"G /mnt/swap/swapfile
+chmod 600 /mnt/swap/swapfile
+mkswap /mnt/swap/swapfile
+swapon /mnt/swap/swapfile
+
+mkdir -p /mnt/boot/efi
+mount "$PART1" /mnt/boot/efi
+
+# packages
+pkgs="base base-devel $MY_INIT elogind-$MY_INIT efibootmgr grub linux linux-firmware vim networkmanager"
+pkgs="$pkgs networkmanager-runit network-manager-applet dosfstools linux-headers bluez bluez-runit bluez-utils cups cups-runit xdg-utils xdg-user-dirs"
+
+case $(grep vendor /proc/cpuinfo) in
+*"Intel"*)
+	pkgs="$pkgs intel-ucode"
+	;;
+*"Amd"*)
+	pkgs="$pkgs amd-ucode"
+	;;
+esac
+
+# Install base system and kernel
+basestrap /mnt $pkgs
+
+fstabgen -U /mnt >/mnt/etc/fstab
 
 # Chroot
-sudo cp src/iamchroot.sh /mnt/root/ &&
-	sudo MY_INIT="$MY_INIT" PART2="$PART2" MY_FS="$MY_FS" ENCRYPTED="$ENCRYPTED" \
-		REGION_CITY="$REGION_CITY" MY_HOSTNAME="$MY_HOSTNAME" CRYPTPASS="$CRYPTPASS" \
-		ROOT_PASSWORD="$ROOT_PASSWORD" LANGCODE="$LANGCODE" MY_KEYMAP="$MY_KEYMAP" \
-		artix-chroot /mnt sh -ec './root/iamchroot.sh; rm /root/iamchroot.sh; exit' &&
-	printf '\nYou may now poweroff.\n'
+artix-chroot /mnt /bin/sh -e <<EOF
+    # Boring stuff you should probably do
+    ln -sf /usr/share/zoneinfo/"$REGION_CITY" /etc/localtime
+    hwclock --systohc
+
+    # Localization
+    printf "%s.UTF-8 UTF-8\n" "$LANGCODE" >>/etc/locale.gen
+    locale-gen
+    printf "LANG=%s.UTF-8\n" "$LANGCODE" >/etc/locale.conf
+    printf "KEYMAP=%s\n" "$MY_KEYMAP" >/etc/vconsole.conf
+
+    # Host stuff
+    printf '%s\n' "$MY_HOSTNAME" >/etc/hostname
+    printf '\n127.0.0.1 localhost' > /etc/hosts
+    printf '\n::1 localhost' >> /etc/hosts
+    printf '\n127.0.1.1 %s.localdomain %s' "$MY_HOSTNAME" "$MY_HOSTNAME" >> /etc/hosts
+
+    # Install boot loader
+    root_uuid=$(blkid "$PART2" -o value -s UUID)
+
+    grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=GRUB --recheck
+    grub-install --target=x86_64-efi --efi-directory=/boot/efi --removable --recheck
+    
+    grub-mkconfig -o /boot/grub/grub.cfg
+
+    # Root user
+    yes "$ROOT_PASSWORD" | passwd
+
+    # Default User
+    useradd -mG wheel $USERNAME
+    echo "$USERNAME:$USER_PASSWORD" | chpasswd
+    sed -i '/%wheel ALL=(ALL) ALL/s/^#//g' /etc/sudoers
+
+    # enable services
+    ln -s /etc/runit/sv/NetworkManager /etc/runit/runsvdir/default/
+    ln -s /etc/runit/sv/bluetoothd /etc/runit/runsvdir/default/
+    ln -s /etc/runit/sv/cupsd /etc/runit/runsvdir/default/
+
+    # Configure mkinitcpio
+    mkinitcpio -P
+EOF
+
+printf '\nInstallation finished. You may now poweroff.\n'
