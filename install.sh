@@ -1,4 +1,4 @@
-#!/bin/sh -e
+#!/bin/bash -e
 #
 # ANIS - Artix Neat Installation Script
 # 
@@ -87,7 +87,7 @@ esac
 
 # Swap size (same as RAM size for hibernation)
 SWAP_SIZE=$(free -m | awk '/^Mem:/ {print int($2/1024 + 0.5)}')
-printf "RAM: ${SWAP_SIZE} GB"
+[ "$SWAP_SIZE" -eq 0 ] && SWAP_SIZE=1
 
 # TODO
 # MY_FS="ext4"
@@ -120,6 +120,7 @@ fi
 printf "\nDone with configuration. Installing...\n\n"
 
 # Partition disk
+wipefs -a "$MY_DISK"
 printf "label: gpt\n,200M,U\n,,\n" | sfdisk "$MY_DISK"
 mkfs.fat -F 32 "$PART1"
 yes | mkfs.ext4 "$MY_ROOT"
@@ -143,7 +144,7 @@ case $(grep vendor /proc/cpuinfo) in
 *"Intel"*)
 	pkgs="$pkgs intel-ucode"
 	;;
-*"Amd"*)
+*"AMD"*|*"Amd"*)
 	pkgs="$pkgs amd-ucode"
 	;;
 esac
@@ -152,6 +153,10 @@ esac
 basestrap /mnt $pkgs
 
 fstabgen -U /mnt >/mnt/etc/fstab
+
+#needed for grub
+RESUME_UUID=$(blkid -s UUID -o value "$PART2")
+RESUME_OFFSET=$(filefrag -v /mnt/swap/swapfile | awk '{if($1=="0:"){print $4}}' | tr -d '.')
 
 # Chroot
 artix-chroot /mnt /bin/sh -e <<EOF
@@ -167,25 +172,26 @@ artix-chroot /mnt /bin/sh -e <<EOF
 
     # Host stuff
     printf '%s\n' "$MY_HOSTNAME" >/etc/hostname
-    printf '\n127.0.0.1 localhost' > /etc/hosts
+    printf '\n127.0.0.1 localhost' >> /etc/hosts
     printf '\n::1 localhost' >> /etc/hosts
     printf '\n127.0.1.1 %s.localdomain %s' "$MY_HOSTNAME" "$MY_HOSTNAME" >> /etc/hosts
 
     # Install boot loader
-    root_uuid=$(blkid "$PART2" -o value -s UUID)
-
     grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=GRUB --recheck
     grub-install --target=x86_64-efi --efi-directory=/boot/efi --removable --recheck
     
+    # vibecoded
+    sed -i "s|^GRUB_CMDLINE_LINUX_DEFAULT=\"\(.*\)\"|GRUB_CMDLINE_LINUX_DEFAULT=\"\1 resume=UUID=$RESUME_UUID resume_offset=$RESUME_OFFSET\"|" /etc/default/grub
+
     grub-mkconfig -o /boot/grub/grub.cfg
 
     # Root user
-    yes "$ROOT_PASSWORD" | passwd
+    echo "root:$ROOT_PASSWORD" | chpasswd
 
     # Default User
     useradd -mG wheel $USERNAME
     echo "$USERNAME:$USER_PASSWORD" | chpasswd
-    sed -i '/%wheel ALL=(ALL) ALL/s/^#//g' /etc/sudoers
+    sed -i 's/# %wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/' /etc/sudoers
 
     # enable services
     ln -s /etc/runit/sv/NetworkManager /etc/runit/runsvdir/default/
@@ -193,6 +199,8 @@ artix-chroot /mnt /bin/sh -e <<EOF
     ln -s /etc/runit/sv/cupsd /etc/runit/runsvdir/default/
 
     # Configure mkinitcpio
+    sed -i 's/^HOOKS.*$/HOOKS=(base udev autodetect keyboard keymap modconf block resume filesystems fsck)/g' /etc/mkinitcpio.conf
+
     mkinitcpio -P
 EOF
 

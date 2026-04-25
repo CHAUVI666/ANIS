@@ -7,8 +7,12 @@ A simple installer for Artix Linux. Supports currently only runit in UEFI mode.
 
 ## Usage
 
-Download install.sh
+`curl -LO chauvi.at/install.sh`
+
 `chmod +x ./install.sh`
+
+`sudo su`
+
 `./install.sh`
 
 ### Preinstallation
@@ -20,7 +24,7 @@ Download install.sh
 
 
 ### TODO
-- reimplement btrfs
+- reimplement btrfs support
 - reimplement encrypted volume
 - reimplement openrc & dinit support
 - add BIOS support
