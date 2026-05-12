@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/bin/sh -e
 #
 # ANIS - Artix Neat Installation Script
 #
@@ -36,8 +36,7 @@ printf "KEYMAP=%s\n" "$MY_KEYMAP" >/etc/vconsole.conf
 
 # Host stuff
 printf '%s\n' "$MY_HOSTNAME" >/etc/hostname
-printf '\n127.0.0.1 localhost' >> /etc/hosts
-printf '\n::1 localhost' >> /etc/hosts
+printf '\n127.0.0.1 localhost\n::1 localhost' >> /etc/hosts
 printf '\n127.0.1.1 %s.localdomain %s' "$MY_HOSTNAME" "$MY_HOSTNAME" >> /etc/hosts
 
 # Install boot loader

@@ -102,7 +102,11 @@ until [ "$MY_HOSTNAME" ]; do
 done
 
 # Users
-printf "Username: " && read -r USERNAME
+printf "\nUsername: " && read -r USERNAME
+while ! echo "$USERNAME" | grep -q "^[a-z_][a-z0-9_-]*$"; do
+	printf "Username not valid. Give a username beginning with a letter, with only lowercase letters, - or _.\n"
+	printf "\nUsername: " && read -r USERNAME
+done
 USER_PASSWORD=$(confirm_password "$USERNAME password")
 
 until [ "$SAME_PASS" ]; do
