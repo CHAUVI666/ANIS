@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/bin/sh -e
 #
 # ANIS - Artix Neat Installation Script
 #
@@ -40,10 +40,9 @@ confirm_password() {
 LANGCODE="${LANG%%.*}"
 
 # Keymap
-if [ -f /etc/vconsole.conf ]; then
-    source /etc/vconsole.conf
-    MY_KEYMAP="$KEYMAP"
-fi
+# shellcheck disable=SC1091
+. /etc/vconsole.conf
+MY_KEYMAP="$KEYMAP"
 
 # Timezone
 LT_PATH=$(realpath /etc/localtime)
@@ -58,18 +57,26 @@ until [ -b "$MY_DISK" ]; do
     printf "\nAviable Disks:\n"
     lsblk -dno NAME,SIZE,MODEL -e 7 | awk '{print "/dev/"$1 " - " $2 " (" $3 " " $4 ") "}'
     
-    read -p "Which Disk do you want to install Artix on? (eg. /dev/sda): " MY_DISK
+    printf "Which Disk do you want to install Artix on? (eg. /dev/sda): " && read -r MY_DISK
     
-    if [[ -b "$MY_DISK" ]]; then
+    if [ -b "$MY_DISK" ]; then
         break
     else
-        printf "Error: '$MY_DISK' is not an option."
+        printf "Error: %s is not an option." "$MY_DISK"
     fi
 done
 
+# Choose filesystem
+until [ "$MY_FS" = "1" ] || [ "$MY_FS" = "2" ]; do
+	printf "Choose filesystem\n(1) btrfs\n(2) ext4\ndefault (1): " && read -r MY_FS
+	[ ! "$MY_FS" ] && MY_FS="1"
+done
+[ "$MY_FS" = "1" ] && MY_FS="btrfs"
+[ "$MY_FS" = "2" ] && MY_FS="ext4"
+
 # Wipe drive warning
 until [ "$CONFIRM" ]; do
-	printf "WARNING: ALL DATA ON $MY_DISK WILL BE WIPED! Continue? (y/N): " && read -r CONFIRM
+	printf "WARNING: ALL DATA ON %s WILL BE WIPED! Continue? (y/N): " "$MY_DISK" && read -r CONFIRM
 	[ ! "$CONFIRM" ] && CONFIRM="n"
 done
 
@@ -84,17 +91,14 @@ case "$MY_DISK" in
 	;;
 esac
 
+MY_ROOT=$PART2
+
 # Swap size (same as RAM size for hibernation)
 SWAP_SIZE=$(free -m | awk '/^Mem:/ {print int($2/1024 + 0.5)}')
 [ "$SWAP_SIZE" -eq 0 ] && SWAP_SIZE=1
 
 # TODO
-# MY_FS="ext4"
-
-# TODO
 # ENCRYPTED="n"
-
-MY_ROOT=$PART2
 
 # Host
 until [ "$MY_HOSTNAME" ]; do

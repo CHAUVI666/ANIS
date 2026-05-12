@@ -62,6 +62,7 @@ ln -s /etc/runit/sv/bluetoothd /etc/runit/runsvdir/default/
 ln -s /etc/runit/sv/cupsd /etc/runit/runsvdir/default/
 
 # Configure mkinitcpio
+[ "$MY_FS" = "btrfs" ] && sed -i 's/BINARIES=()/BINARIES=(\/usr\/bin\/btrfs)/g' /etc/mkinitcpio.conf
 sed -i 's/^HOOKS.*$/HOOKS=(base udev autodetect keyboard keymap modconf block resume filesystems fsck)/g' /etc/mkinitcpio.conf
 
 mkinitcpio -P
