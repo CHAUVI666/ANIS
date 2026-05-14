@@ -32,7 +32,7 @@ Login to your live artix iso with artix:artix
 ### TODO
 
 * ~~reimplement btrfs support~~
-* reimplement encrypted volume
+* ~~reimplement encrypted volume~~
 * add BIOS support
 * reimplement openrc & dinit support
 

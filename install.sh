@@ -66,22 +66,6 @@ until [ -b "$MY_DISK" ]; do
     fi
 done
 
-# Choose filesystem
-until [ "$MY_FS" = "1" ] || [ "$MY_FS" = "2" ]; do
-	printf "Choose filesystem\n(1) btrfs\n(2) ext4\ndefault (1): " && read -r MY_FS
-	[ ! "$MY_FS" ] && MY_FS="1"
-done
-[ "$MY_FS" = "1" ] && MY_FS="btrfs"
-[ "$MY_FS" = "2" ] && MY_FS="ext4"
-
-# Wipe drive warning
-until [ "$CONFIRM" ]; do
-	printf "WARNING: ALL DATA ON %s WILL BE WIPED! Continue? (y/N): " "$MY_DISK" && read -r CONFIRM
-	[ ! "$CONFIRM" ] && CONFIRM="n"
-done
-
-[ ! "$CONFIRM" = "y" ] && printf "Installation aborted by user. Nothing was changed.\n" && exit 1
-
 PART1="$MY_DISK"1
 PART2="$MY_DISK"2
 case "$MY_DISK" in
@@ -91,14 +75,40 @@ case "$MY_DISK" in
 	;;
 esac
 
-MY_ROOT=$PART2
+# Wipe drive warning
+until [ "$CONFIRM" ]; do
+	printf "WARNING: ALL DATA ON %s WILL BE WIPED! Continue? (y/N): " "$MY_DISK" && read -r CONFIRM
+	[ ! "$CONFIRM" ] && CONFIRM="n"
+done
+
+[ ! "$CONFIRM" = "y" ] && printf "Installation aborted by user. Nothing was changed.\n" && exit 1
+
+# Choose filesystem
+until [ "$MY_FS" = "1" ] || [ "$MY_FS" = "2" ]; do
+	printf "Choose filesystem\n(1) btrfs\n(2) ext4\ndefault (1): " && read -r MY_FS
+	[ ! "$MY_FS" ] && MY_FS="1"
+done
+[ "$MY_FS" = "1" ] && MY_FS="btrfs"
+[ "$MY_FS" = "2" ] && MY_FS="ext4"
+
+# Encrypt or not
+until [ "$ENCRYPTED" ]; do
+	printf "Encrypt? (y/N): " && read -r ENCRYPTED
+	[ ! "$ENCRYPTED" ] && ENCRYPTED="n"
+done
+
+if [ "$ENCRYPTED" = "y" ]; then
+	MY_ROOT="/dev/mapper/root"
+	CRYPTPASS=$(confirm_password "encryption password")
+else
+	MY_ROOT=$PART2
+	# ??? what was the intention behind that
+	# [ "$MY_FS" = "ext4" ] && MY_ROOT=$PART2
+fi
 
 # Swap size (same as RAM size for hibernation)
 SWAP_SIZE=$(free -m | awk '/^Mem:/ {print int($2/1024 + 0.5)}')
 [ "$SWAP_SIZE" -eq 0 ] && SWAP_SIZE=1
-
-# TODO
-# ENCRYPTED="n"
 
 # Host
 until [ "$MY_HOSTNAME" ]; do
@@ -137,6 +147,6 @@ sudo cp src/iamchroot.sh /mnt/root/ &&
 	sudo MY_INIT="$MY_INIT" PART2="$PART2" MY_FS="$MY_FS" ENCRYPTED="$ENCRYPTED" \
 		REGION_CITY="$REGION_CITY" MY_HOSTNAME="$MY_HOSTNAME" CRYPTPASS="$CRYPTPASS" \
 		ROOT_PASSWORD="$ROOT_PASSWORD" LANGCODE="$LANGCODE" MY_KEYMAP="$MY_KEYMAP" \
-		USERNAME="$USERNAME" USER_PASSWORD="$USER_PASSWORD" \
+		USERNAME="$USERNAME" USER_PASSWORD="$USER_PASSWORD" MY_ROOT="$MY_ROOT" \
 		artix-chroot /mnt sh -ec './root/iamchroot.sh; rm /root/iamchroot.sh; exit' &&
 	printf '\nYou may now poweroff.\n'

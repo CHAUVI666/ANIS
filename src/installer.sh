@@ -25,6 +25,11 @@ wipefs -a "$MY_DISK"
 printf "label: gpt\n,550M,U\n,,\n" | sfdisk "$MY_DISK"
 
 # Format and mount partitions
+if [ "$ENCRYPTED" = "y" ]; then
+	yes "$CRYPTPASS" | cryptsetup -q luksFormat "$PART2"
+	yes "$CRYPTPASS" | cryptsetup open "$PART2" root
+fi
+
 mkfs.fat -F 32 "$PART1"
 
 if [ "$MY_FS" = "ext4" ]; then
@@ -58,7 +63,7 @@ elif [ "$MY_FS" = "btrfs" ]; then
 	mount -t btrfs -o compress=zstd,subvol=@home "$MY_ROOT" /mnt/home
 	mount -t btrfs -o compress=zstd,subvol=@log "$MY_ROOT" /mnt/var/log
 	mount -t btrfs -o compress=zstd,subvol=@cache "$MY_ROOT" /mnt/var/cache
-	mount -t btrfs -o subvol=@swap "$MY_ROOT" /mnt/swap
+	mount -t btrfs -o noatime,nodatacow,subvol=@swap "$MY_ROOT" /mnt/swap
 
 	# Create swapfile
 	btrfs filesystem mkswapfile -s "$SWAP_SIZE"G /mnt/swap/swapfile
@@ -73,6 +78,7 @@ mount "$PART1" /mnt/boot/efi
 pkgs="base base-devel $MY_INIT elogind-$MY_INIT efibootmgr grub linux linux-firmware vim networkmanager"
 pkgs="$pkgs networkmanager-runit network-manager-applet dosfstools linux-headers bluez bluez-runit bluez-utils cups cups-runit xdg-utils xdg-user-dirs"
 [ "$MY_FS" = "btrfs" ] && pkgs="$pkgs btrfs-progs"
+[ "$ENCRYPTED" = "y" ] && pkgs="$pkgs cryptsetup cryptsetup-$MY_INIT"
 
 case $(grep vendor /proc/cpuinfo) in
 *"Intel"*)
