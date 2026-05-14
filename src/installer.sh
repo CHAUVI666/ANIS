@@ -41,17 +41,24 @@ elif [ "$MY_FS" = "btrfs" ]; then
 
 	# Create subvolumes
 	mount "$MY_ROOT" /mnt
-	btrfs subvolume create /mnt/root
-	btrfs subvolume create /mnt/home
-	btrfs subvolume create /mnt/swap
+	btrfs subvolume create /mnt/@
+	btrfs subvolume create /mnt/@home
+	btrfs subvolume create /mnt/@log
+	btrfs subvolume create /mnt/@cache
+	btrfs subvolume create /mnt/@swap
 	umount -R /mnt
 
 	# Mount subvolumes
-	mount -t btrfs -o compress=zstd,subvol=root "$MY_ROOT" /mnt
+	mount -t btrfs -o compress=zstd,subvol=@ "$MY_ROOT" /mnt
 	mkdir /mnt/home
 	mkdir /mnt/swap
-	mount -t btrfs -o compress=zstd,subvol=home "$MY_ROOT" /mnt/home
-	mount -t btrfs -o compress=zstd,subvol=swap "$MY_ROOT" /mnt/swap
+	mkdir -p /mnt/var/log
+	mkdir /mnt/var/cache
+
+	mount -t btrfs -o compress=zstd,subvol=@home "$MY_ROOT" /mnt/home
+	mount -t btrfs -o compress=zstd,subvol=@log "$MY_ROOT" /mnt/var/log
+	mount -t btrfs -o compress=zstd,subvol=@cache "$MY_ROOT" /mnt/var/cache
+	mount -t btrfs -o subvol=@swap "$MY_ROOT" /mnt/swap
 
 	# Create swapfile
 	btrfs filesystem mkswapfile -s "$SWAP_SIZE"G /mnt/swap/swapfile

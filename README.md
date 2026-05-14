@@ -1,4 +1,4 @@
-# ANIS - Artix Neat Installation Script
+# ANIS - Artix' Next Installation Script
 
 ## (runit)
 
@@ -10,15 +10,17 @@ A simple installer for Artix Linux. Supports currently only runit in UEFI mode.
 
 Login to your live artix iso with artix:artix
 
-`curl -LO chauvi.at/anis.tar`
-
-`tar -xvf anis.tar`
-
-`chmod +x ./install.sh`
-
 `sudo su`
 
-`./install.sh`
+`curl -LOk https://github.com/CHAUVI666/ANIS/archive/refs/heads/main.zip`
+
+`pacman -Sy unzip`
+
+`unzip main.zip`
+
+`cd ANIS-main`
+
+`sh install.sh`
 
 ### Preinstallation
 
@@ -29,11 +31,12 @@ Login to your live artix iso with artix:artix
 
 ### TODO
 
-* reimplement btrfs support (done)
+* ~~reimplement btrfs support~~
 * reimplement encrypted volume
-* reimplement openrc & dinit support
 * add BIOS support
+* reimplement openrc & dinit support
 
 ### (((PLANNED)))
 
-* adding snapshot/autosnapshots for btrfs, but for that i have to learn more about btrfs myself since i only ever used ext4
+* adding snapshots for btrfs, but for that i have to learn more about btrfs myself since i only ever used ext4
+* add option for zram
