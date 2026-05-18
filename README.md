@@ -8,9 +8,7 @@ A simple installer for Artix Linux. Supports currently only runit in UEFI mode.
 
 ## Usage
 
-Login to your live artix iso with artix:artix
-
-`sudo su`
+Login to your live artix iso with root:artix
 
 `curl -LOk https://github.com/CHAUVI666/ANIS/archive/refs/heads/main.zip`
 

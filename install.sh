@@ -108,7 +108,7 @@ fi
 
 # Swap size (same as RAM size for hibernation)
 SWAP_SIZE=$(free -m | awk '/^Mem:/ {print int($2/1024 + 0.5)}')
-[ "$SWAP_SIZE" -eq 0 ] && SWAP_SIZE=1
+[ "$SWAP_SIZE" -lt 4 ] && SWAP_SIZE=4
 
 # Host
 until [ "$MY_HOSTNAME" ]; do
@@ -117,6 +117,8 @@ done
 
 # Users
 printf "\nUsername: " && read -r USERNAME
+
+# Thanks to LARBS.xyz
 while ! echo "$USERNAME" | grep -q "^[a-z_][a-z0-9_-]*$"; do
 	printf "Username not valid. Give a username beginning with a letter, with only lowercase letters, - or _.\n"
 	printf "\nUsername: " && read -r USERNAME

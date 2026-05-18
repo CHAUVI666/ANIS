@@ -39,9 +39,10 @@ root_uuid=$(blkid "$PART2" -o value -s UUID)
 RESUME_UUID=$(blkid "$MY_ROOT" -o value -s UUID )
 
 if [ "$MY_FS" = "btrfs" ]; then
-    RESUME_OFFSET=$(btrfs inspect-internal map-swapfile /mnt/swap/swapfile | awk '{print $4}')
+    RESUME_OFFSET=$(btrfs inspect-internal map-swapfile -r /swap/swapfile)
 else
-    RESUME_OFFSET=$(filefrag -v /mnt/swap/swapfile | awk '{if($1=="0:"){print $4}}' | tr -d '.')
+	# thanks to https://forums.linuxmint.com/viewtopic.php?p=2322368#p2322368
+    RESUME_OFFSET=$(filefrag -v /swap/swapfile |awk 'NR==4{gsub(/\./,"");print $4;}')
 fi
 
 my_params="resume=UUID=$RESUME_UUID resume_offset=$RESUME_OFFSET"

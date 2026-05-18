@@ -50,6 +50,7 @@ elif [ "$MY_FS" = "btrfs" ]; then
 	btrfs subvolume create /mnt/@home
 	btrfs subvolume create /mnt/@log
 	btrfs subvolume create /mnt/@cache
+	btrfs subvolume create /mnt/@tmp
 	btrfs subvolume create /mnt/@swap
 	umount -R /mnt
 
@@ -59,10 +60,12 @@ elif [ "$MY_FS" = "btrfs" ]; then
 	mkdir /mnt/swap
 	mkdir -p /mnt/var/log
 	mkdir /mnt/var/cache
+	mkdir /mnt/var/tmp
 
 	mount -t btrfs -o compress=zstd,subvol=@home "$MY_ROOT" /mnt/home
 	mount -t btrfs -o compress=zstd,subvol=@log "$MY_ROOT" /mnt/var/log
 	mount -t btrfs -o compress=zstd,subvol=@cache "$MY_ROOT" /mnt/var/cache
+	mount -t btrfs -o compress=zstd,subvol=@tmp "$MY_ROOT" /mnt/var/tmp
 	mount -t btrfs -o noatime,nodatacow,subvol=@swap "$MY_ROOT" /mnt/swap
 
 	# Create swapfile
