@@ -1,4 +1,4 @@
-#!/bin/sh -e
+#!/bin/sh
 #
 # ANIS - Artix Neat Installation Script
 #
@@ -19,6 +19,11 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with ANIS If not, see <https://www.gnu.org/licenses/>.
+
+ROOT_DIR=$(cd "$(dirname "$0")" && pwd)
+
+# shellcheck disable=SC1091
+. "$ROOT_DIR/gpufetch/gpufetch.sh"
 
 confirm_password() {
 	stty -echo

@@ -1,19 +1,20 @@
 #!/bin/sh
 
-BRAND=$(lspci | grep VGA | awk {'print $5'})
-echo $BRAND
-CODE=$(lspci | grep VGA | awk {'print $7'})
-echo $CODE
+BRAND=$(lspci | grep VGA | awk \{'print $5'\})
+CODE=$(lspci | grep VGA | awk \{'print $7'\})
+CODE="${CODE%M}"
 
-if [ $BRAND == "NVIDIA" ]; then
-	while read line; do	
-		CODES=$(echo $line | grep "^[^#]")
-
-		CURRENT_CODE=$(echo "$CODES" | awk '{print $1}')
-		if [ -n "$CODES" ] && [ -n "$(echo "$CODE" | grep "$CURRENT_CODE")" ]; then	
-			MATCH=$CODES
-			break
+getGPUGen(){
+	if [ "$BRAND" = "NVIDIA" ]; then
+		GPULIST="${ROOT_DIR}/gpufetch/gpulist"
+		GEN="$(grep "$CODE" "$GPULIST")"
+		echo "$GEN"
+		if [ -n "$GEN" ]; then
+			echo "$GEN"
+		else
+			echo "E2"
 		fi
-	done < ./gpulist
-	echo $MATCH
-fi
+	else
+		echo "E1"
+	fi
+}
