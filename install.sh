@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/sh -e
 #
 # ANIS - Artix Neat Installation Script
 #
@@ -40,6 +40,12 @@ confirm_password() {
 
 # Check init system
 [ ! -d /etc/runit ] && printf "wrong init, this script is ONLY for RUNIT!\n" && exit 1
+
+# Check GPU Driver
+GPU_GEN="$(getGPUGen | awk \{'print int($2)'\})"
+if [ -n "$GPU_GEN" ]; then
+	GPU_DRIVER="$(getDriver)"
+fi
 
 # Language
 LANGCODE="${LANG%%.*}"
@@ -146,7 +152,7 @@ printf "\nDone with configuration. Installing...\n\n"
 # Install
 sudo MY_INIT="$MY_INIT" MY_DISK="$MY_DISK" PART1="$PART1" PART2="$PART2" \
 	SWAP_SIZE="$SWAP_SIZE" MY_FS="$MY_FS" ENCRYPTED="$ENCRYPTED" MY_ROOT="$MY_ROOT" \
-	CRYPTPASS="$CRYPTPASS" \
+	CRYPTPASS="$CRYPTPASS" GPU_GEN="$GPU_GEN" GPU_DRIVER="$GPU_DRIVER"\
 	./src/installer.sh
 
 # Chroot
