@@ -1,10 +1,15 @@
 # ANIS - Artix' Next Installation Script
 
-## (runit)
-
 ![](https://img.shields.io/badge/OS-Artix%20Linux-blue?logo=Artix+Linux)
 
-A simple installer for Artix Linux. Supports currently only runit in UEFI mode.
+A simple installer for Art ix Linux. Supports currently **only runit in UEFI** mode.
+
+> Important to mention that this script in its current state is **NOT** stable. Everything that could break will break, eventually.
+
+As longs as there is no release tab aviable the main branch will continue to be used for non tested function implementations .
+Well, also IF theres a release aviable, I'm only able to confirm that it works on my machine™
+
+Primarily I started that fork to force myself into learning shell scripting (and maybe some C in the future) as well as to dive deeper into everything GNU/Linux has to offer.
 
 ## Usage
 
@@ -31,6 +36,7 @@ Login to your live artix iso with root:artix
 
 * ~~reimplement btrfs support~~
 * ~~reimplement encrypted volume~~
+* get hibernation to work... (impossible)
 * add BIOS support
 * reimplement openrc & dinit support
 

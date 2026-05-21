@@ -1,0 +1,11 @@
+2026-05-21
+Thought it would be kinda funny to implement something like a
+diary for that project. 
+
+I'm currently thinking about dropping that "auto nvidia driver
+install" process i planned, since it would conflict with the idea
+of using FOSS as a default. Still the gpufetch script will come
+in handy to optimize nouveau settings.
+
+Currently my greatest enemy is getting hibernation to work on my 
+machines.

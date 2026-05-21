@@ -80,10 +80,9 @@ mount "$PART1" /mnt/boot/efi
 # packages
 pkgs="base base-devel $MY_INIT elogind-$MY_INIT efibootmgr grub linux linux-firmware vimnetworkmanager"
 pkgs="$pkgs networkmanager-runit network-manager-applet dosfstools linux-headers bluez bluez-runit"
-pkgs="$pkgs bluez-utils cups cups-runit xdg-utils xdg-user-dirs"
+pkgs="$pkgs bluez-utils cups cups-runit xdg-utils xdg-user-dirs git"
 [ "$MY_FS" = "btrfs" ] && pkgs="$pkgs btrfs-progs"
 [ "$ENCRYPTED" = "y" ] && pkgs="$pkgs cryptsetup cryptsetup-$MY_INIT"
-[ "$GPU_GEN" -eq 14 ] && pkgs="$pkgs $GPU_DRIVER"
 
 case $(grep vendor /proc/cpuinfo) in
 *"Intel"*)

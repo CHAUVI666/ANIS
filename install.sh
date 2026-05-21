@@ -42,10 +42,10 @@ confirm_password() {
 [ ! -d /etc/runit ] && printf "wrong init, this script is ONLY for RUNIT!\n" && exit 1
 
 # Check GPU Driver
-GPU_GEN="$(getGPUGen | awk \{'print int($2)'\})"
-if [ -n "$GPU_GEN" ]; then
-	GPU_DRIVER="$(getDriver)"
-fi
+# GPU_GEN="$(getGPUGen | awk \{'print int($2)'\})"
+# if [ -n "$GPU_GEN" ]; then
+# 	GPU_DRIVER="$(getDriver)"
+# fi
 
 # Language
 LANGCODE="${LANG%%.*}"
