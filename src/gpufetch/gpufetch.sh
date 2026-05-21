@@ -6,7 +6,7 @@ CODE="${CODE%M}"
 
 getGPUGen(){
 	if [ "$BRAND" = "NVIDIA" ]; then
-		GPULIST="${ROOT_DIR}/gpufetch/gpulist"
+		GPULIST="${ROOT_DIR}/src/gpufetch/gpulist"
 		GEN="$(grep "$CODE" "$GPULIST")"
 		if [ -n "$GEN" ]; then
 			echo "$GEN"

@@ -23,7 +23,7 @@
 ROOT_DIR=$(cd "$(dirname "$0")" && pwd)
 
 # shellcheck disable=SC1091
-. "$ROOT_DIR/gpufetch/gpufetch.sh"
+. "$ROOT_DIR/src/gpufetch/gpufetch.sh"
 
 confirm_password() {
 	stty -echo
@@ -152,7 +152,7 @@ printf "\nDone with configuration. Installing...\n\n"
 # Install
 sudo MY_INIT="$MY_INIT" MY_DISK="$MY_DISK" PART1="$PART1" PART2="$PART2" \
 	SWAP_SIZE="$SWAP_SIZE" MY_FS="$MY_FS" ENCRYPTED="$ENCRYPTED" MY_ROOT="$MY_ROOT" \
-	CRYPTPASS="$CRYPTPASS" GPU_GEN="$GPU_GEN" GPU_DRIVER="$GPU_DRIVER"\
+	CRYPTPASS="$CRYPTPASS" \
 	./src/installer.sh
 
 # Chroot
