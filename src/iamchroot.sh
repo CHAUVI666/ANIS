@@ -29,6 +29,9 @@ printf "%s.UTF-8 UTF-8\n" "$LANGCODE" >>/etc/locale.gen
 locale-gen
 printf "LANG=%s.UTF-8\n" "$LANGCODE" >/etc/locale.conf
 printf "KEYMAP=%s\n" "$MY_KEYMAP" >/etc/vconsole.conf
+printf "keymap=%s\n" "$MY_KEYMAP" >/etc/conf.d/keymaps
+
+
 
 # Host stuff
 printf '%s\n' "$MY_HOSTNAME" >/etc/hostname
@@ -70,7 +73,7 @@ useradd -mG wheel "$USERNAME"
 printf "%s:%s\n" "$USERNAME" "$USER_PASSWORD" | chpasswd
 sed -i 's/# %wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/' /etc/sudoers
 
-# enable services
+# enable services (runit)
 ln -s /etc/runit/sv/NetworkManager /etc/runit/runsvdir/default/
 ln -s /etc/runit/sv/bluetoothd /etc/runit/runsvdir/default/
 ln -s /etc/runit/sv/cupsd /etc/runit/runsvdir/default/

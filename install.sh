@@ -39,6 +39,12 @@ confirm_password() {
 BOOTMODE="UEFI"
 [ ! -d /sys/firmware/efi ] && BOOTMODE="BIOS"
 
+
+[ -d /etc/runit ] && MY_INIT="runit" && sv up openntpd
+[ -d /etc/openrc ] && MY_INIT="openrc" && rc-service ntpd start
+[ -d /etc/dinit ] && MY_INIT="dinit" && dinitctl start ntpd
+[ -d /etc/s6 ] && MY_INIT="s6" && s6-rc -u change openntpd
+
 # Check init system
 # [ ! -d /etc/runit ] && printf "wrong init, this script is ONLY for RUNIT!\n" && exit 1
 

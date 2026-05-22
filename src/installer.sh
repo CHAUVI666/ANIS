@@ -86,8 +86,8 @@ fi
 
 # packages
 pkgs="base base-devel $MY_INIT elogind-$MY_INIT grub linux linux-firmware vim networkmanager"
-pkgs="$pkgs networkmanager-runit network-manager-applet dosfstools linux-headers bluez bluez-runit"
-pkgs="$pkgs bluez-utils cups cups-runit xdg-utils xdg-user-dirs git"
+pkgs="$pkgs networkmanager-$MY_INIT network-manager-applet dosfstools linux-headers bluez bluez-$MY_INIT"
+pkgs="$pkgs bluez-utils cups cups-$MY_INIT xdg-utils xdg-user-dirs git"
 [ "$MY_FS" = "btrfs" ] && pkgs="$pkgs btrfs-progs"
 [ "$ENCRYPTED" = "y" ] && pkgs="$pkgs cryptsetup cryptsetup-$MY_INIT"
 [ "$BOOTMODE" = "UEFI" ] && pkgs="$pkgs efibootmgr"

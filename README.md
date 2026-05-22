@@ -44,3 +44,5 @@ Login to your live artix iso with root:artix
 * get hibernation to work... (impossible)
 * brfs snapshots
 * add option for zram
+* add partition resizing for dualbooting
+* support other kernels
