@@ -39,11 +39,19 @@ confirm_password() {
 BOOTMODE="UEFI"
 [ ! -d /sys/firmware/efi ] && BOOTMODE="BIOS"
 
+MY_INIT="$(cat /etc/os-release | grep "VARIANT")"
+MY_INIT="${MY_INIT#*-}"
 
-[ -d /etc/runit ] && MY_INIT="runit" && sv up openntpd
-[ -d /etc/openrc ] && MY_INIT="openrc" && rc-service ntpd start
-[ -d /etc/dinit ] && MY_INIT="dinit" && dinitctl start ntpd
-[ -d /etc/s6 ] && MY_INIT="s6" && s6-rc -u change openntpd
+[ "$MY_INIT" = "runit" ] && ln -s /etc/runit/sv/ntpd /run/runit/service/
+[ "$MY_INIT" = "openrc" ] && rc-service ntpd start
+[ "$MY_INIT" = "dinit" ] && dinitctl start ntpd
+[ "$MY_INIT" = "s6" ] && s6-rc -v 0 -u change ntpd && clear
+
+# clear second time because of s6 logs lol
+clear
+
+echo "Detected Init: $MY_INIT"
+MY_INIT="runit"
 
 # Check init system
 # [ ! -d /etc/runit ] && printf "wrong init, this script is ONLY for RUNIT!\n" && exit 1
@@ -65,10 +73,6 @@ MY_KEYMAP="$KEYMAP"
 # Timezone
 LT_PATH=$(realpath /etc/localtime)
 REGION_CITY="${LT_PATH#*zoneinfo/}"
-
-# TODO
-# Init system (for later use... if I'm really going for ALL systems)
-MY_INIT="runit"
 
 # Choose disk
 until [ -b "$MY_DISK" ]; do

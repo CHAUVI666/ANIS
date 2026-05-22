@@ -74,9 +74,15 @@ printf "%s:%s\n" "$USERNAME" "$USER_PASSWORD" | chpasswd
 sed -i 's/# %wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/' /etc/sudoers
 
 # enable services (runit)
-ln -s /etc/runit/sv/NetworkManager /etc/runit/runsvdir/default/
-ln -s /etc/runit/sv/bluetoothd /etc/runit/runsvdir/default/
-ln -s /etc/runit/sv/cupsd /etc/runit/runsvdir/default/
+if [ "$MY_INIT" = "runit" ]; then
+	ln -s /etc/runit/sv/NetworkManager /etc/runit/runsvdir/default/
+	ln -s /etc/runit/sv/bluetoothd /etc/runit/runsvdir/default/
+	ln -s /etc/runit/sv/cupsd /etc/runit/runsvdir/default/
+elif [ "$MY_INIT" = "openrc" ]; then
+	rc-update add NetworkManager
+	rc-update add bluetoothd
+	rc-update add cupsd
+fi
 
 # Configure mkinitcpio
 [ "$MY_FS" = "btrfs" ] && sed -i 's/BINARIES=()/BINARIES=(\/usr\/bin\/btrfs)/g' /etc/mkinitcpio.conf
