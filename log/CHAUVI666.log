@@ -1,3 +1,16 @@
+2026-05-22
+Today I thought of prioritising the basic install process. Making
+things work in the first place that are essential for a basic
+setup should have been prio 1 all along. Thats why I decidet to 
+remove gpufetch from the initial setup completely for now.
+I'll rather focus on hibernation, additional drivers etc in a
+dedicated post install script.
+
+So for now I will just look up what the Artix Wiki has described 
+in their installation guide and implement only those features for 
+all of Artix' init systems as well as improving the UI overall.
+
+
 2026-05-21
 Thought it would be kinda funny to implement something like a
 diary for that project. 

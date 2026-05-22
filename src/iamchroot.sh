@@ -54,8 +54,12 @@ fi
 sed -i "s/^GRUB_CMDLINE_LINUX_DEFAULT.*$/GRUB_CMDLINE_LINUX_DEFAULT=\"$my_params\"/g" /etc/default/grub
 [ "$ENCRYPTED" = "y" ] && sed -i '/GRUB_ENABLE_CRYPTODISK=y/s/^#//g' /etc/default/grub
 
-grub-install --target=x86_64-efi --efi-directory=/boot/efi --recheck
-grub-install --target=x86_64-efi --efi-directory=/boot/efi --removable --recheck
+if [ "$BOOTMODE" = "UEFI" ]; then
+	grub-install --target=x86_64-efi --efi-directory=/boot/efi --recheck
+	grub-install --target=x86_64-efi --efi-directory=/boot/efi --removable --recheck
+else
+	grub-install --recheck "$MY_DISK"
+fi
 grub-mkconfig -o /boot/grub/grub.cfg
 
 # Root user

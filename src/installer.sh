@@ -22,7 +22,8 @@
 
 # Partition disk
 wipefs -a "$MY_DISK"
-printf "label: gpt\n,550M,U\n,,\n" | sfdisk "$MY_DISK"
+[ "$BOOTMODE" = "UEFI" ] && printf "label: gpt\n,512M,U\n,,\n" | sfdisk "$MY_DISK"
+[ "$BOOTMODE" = "BIOS" ] && printf "label: dos\n,512M,L,*\n,,\n" | sfdisk "$MY_DISK"
 
 # Format and mount partitions
 if [ "$ENCRYPTED" = "y" ]; then
@@ -30,7 +31,8 @@ if [ "$ENCRYPTED" = "y" ]; then
 	yes "$CRYPTPASS" | cryptsetup open "$PART2" root
 fi
 
-mkfs.fat -F 32 "$PART1"
+[ "$BOOTMODE" = "UEFI" ] && mkfs.fat -F 32 "$PART1"
+[ "$BOOTMODE" = "BIOS" ] && yes | mkfs.ext4 "$PART1"
 
 if [ "$MY_FS" = "ext4" ]; then
 	yes | mkfs.ext4 "$MY_ROOT"
@@ -74,15 +76,21 @@ fi
 
 swapon /mnt/swap/swapfile
 
-mkdir -p /mnt/boot/efi
-mount "$PART1" /mnt/boot/efi
+if [ "$BOOTMODE" = "UEFI" ]; then
+	mkdir -p /mnt/boot/efi
+	mount "$PART1" /mnt/boot/efi
+else
+	mkdir /mnt/boot
+	mount "$PART1" /mnt/boot
+fi
 
 # packages
-pkgs="base base-devel $MY_INIT elogind-$MY_INIT efibootmgr grub linux linux-firmware vimnetworkmanager"
+pkgs="base base-devel $MY_INIT elogind-$MY_INIT grub linux linux-firmware vim networkmanager"
 pkgs="$pkgs networkmanager-runit network-manager-applet dosfstools linux-headers bluez bluez-runit"
 pkgs="$pkgs bluez-utils cups cups-runit xdg-utils xdg-user-dirs git"
 [ "$MY_FS" = "btrfs" ] && pkgs="$pkgs btrfs-progs"
 [ "$ENCRYPTED" = "y" ] && pkgs="$pkgs cryptsetup cryptsetup-$MY_INIT"
+[ "$BOOTMODE" = "UEFI" ] && pkgs="$pkgs efibootmgr"
 
 case $(grep vendor /proc/cpuinfo) in
 *"Intel"*)

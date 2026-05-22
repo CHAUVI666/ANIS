@@ -36,11 +36,11 @@ Login to your live artix iso with root:artix
 
 * ~~reimplement btrfs support~~
 * ~~reimplement encrypted volume~~
-* get hibernation to work... (impossible)
-* add BIOS support
+* ~~add BIOS support~~
 * reimplement openrc & dinit support
 
 ### (((PLANNED)))
 
-* adding snapshots for btrfs, but for that i have to learn more about btrfs myself since i only ever used ext4
+* get hibernation to work... (impossible)
+* brfs snapshots
 * add option for zram

@@ -20,10 +20,10 @@
 # You should have received a copy of the GNU General Public License
 # along with ANIS If not, see <https://www.gnu.org/licenses/>.
 
-ROOT_DIR=$(cd "$(dirname "$0")" && pwd)
+# ROOT_DIR=$(cd "$(dirname "$0")" && pwd)
 
 # shellcheck disable=SC1091
-. "$ROOT_DIR/src/gpufetch/gpufetch.sh"
+# . "$ROOT_DIR/src/gpufetch/gpufetch.sh"
 
 confirm_password() {
 	stty -echo
@@ -36,10 +36,11 @@ confirm_password() {
 }
 
 # Check boot mode
-[ ! -d /sys/firmware/efi ] && printf "Not booted in UEFI mode. Aborting...\n" && exit 1
+BOOTMODE="UEFI"
+[ ! -d /sys/firmware/efi ] && BOOTMODE="BIOS"
 
 # Check init system
-[ ! -d /etc/runit ] && printf "wrong init, this script is ONLY for RUNIT!\n" && exit 1
+# [ ! -d /etc/runit ] && printf "wrong init, this script is ONLY for RUNIT!\n" && exit 1
 
 # Check GPU Driver
 # GPU_GEN="$(getGPUGen | awk \{'print int($2)'\})"
@@ -152,7 +153,7 @@ printf "\nDone with configuration. Installing...\n\n"
 # Install
 sudo MY_INIT="$MY_INIT" MY_DISK="$MY_DISK" PART1="$PART1" PART2="$PART2" \
 	SWAP_SIZE="$SWAP_SIZE" MY_FS="$MY_FS" ENCRYPTED="$ENCRYPTED" MY_ROOT="$MY_ROOT" \
-	CRYPTPASS="$CRYPTPASS" \
+	CRYPTPASS="$CRYPTPASS" BOOTMODE="$BOOTMODE" \
 	./src/installer.sh
 
 # Chroot
@@ -161,5 +162,6 @@ sudo cp src/iamchroot.sh /mnt/root/ &&
 		REGION_CITY="$REGION_CITY" MY_HOSTNAME="$MY_HOSTNAME" CRYPTPASS="$CRYPTPASS" \
 		ROOT_PASSWORD="$ROOT_PASSWORD" LANGCODE="$LANGCODE" MY_KEYMAP="$MY_KEYMAP" \
 		USERNAME="$USERNAME" USER_PASSWORD="$USER_PASSWORD" MY_ROOT="$MY_ROOT" \
+		BOOTMODE="$BOOTMODE" MY_DISK="$MY_DISK" \
 		artix-chroot /mnt sh -ec './root/iamchroot.sh; rm /root/iamchroot.sh; exit' &&
 	printf '\nYou may now poweroff.\n'
