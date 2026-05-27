@@ -82,6 +82,10 @@ elif [ "$MY_INIT" = "openrc" ]; then
 	rc-update add NetworkManager
 	rc-update add bluetoothd
 	rc-update add cupsd
+elif [ "$MY_INIT" = "s6" ]; then
+	s6 set enable NetworkManager
+	s6 set enable bluetoothd
+	s6 set enable cupsd
 fi
 
 # Configure mkinitcpio

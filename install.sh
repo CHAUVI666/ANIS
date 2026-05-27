@@ -39,6 +39,7 @@ confirm_password() {
 BOOTMODE="UEFI"
 [ ! -d /sys/firmware/efi ] && BOOTMODE="BIOS"
 
+# Check init system
 MY_INIT="$(cat /etc/os-release | grep "VARIANT")"
 MY_INIT="${MY_INIT#*-}"
 
@@ -51,7 +52,6 @@ MY_INIT="${MY_INIT#*-}"
 clear
 
 echo "Detected Init: $MY_INIT"
-MY_INIT="runit"
 
 # Check init system
 # [ ! -d /etc/runit ] && printf "wrong init, this script is ONLY for RUNIT!\n" && exit 1

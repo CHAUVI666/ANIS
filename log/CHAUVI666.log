@@ -1,3 +1,15 @@
+2026-05-27
+was wondering why s6 dumps all the logs into my terminal until
+i looked up the artix wiki 
+>Note: s6-linux-init on artix is compiled with the option to print 
+>messages to /dev/console. By default, this is tty1. You can change 
+>/dev/console to another location using a kernel parameter (see 
+>your bootloader's configuration) if you'd like. 
+
+yeah, kinda annoying for ANIS since prompts will easily be overlooked, 
+but i think people are smart enough to switch to tty2 if i say so
+in the README
+
 2026-05-22
 Today I thought of prioritising the basic install process. Making
 things work in the first place that are essential for a basic
