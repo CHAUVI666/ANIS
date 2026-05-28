@@ -33,6 +33,7 @@ printf "KEYMAP=%s\n" "$MY_KEYMAP" >/etc/vconsole.conf
 
 # Host stuff
 printf '%s\n' "$MY_HOSTNAME" >/etc/hostname
+[ "$MY_INIT" = "openrc" ] && printf "hostname=\"%s\"\n" "$MY_HOSTNAME" >/etc/conf.d/hostname
 printf '\n127.0.0.1 localhost\n::1 localhost\n127.0.1.1 %s.localdomain %s' "$MY_HOSTNAME" "$MY_HOSTNAME" >> /etc/hosts
 
 # Install boot loader
@@ -77,9 +78,9 @@ if [ "$MY_INIT" = "runit" ]; then
 	ln -s /etc/runit/sv/bluetoothd /etc/runit/runsvdir/default/
 	ln -s /etc/runit/sv/cupsd /etc/runit/runsvdir/default/
 elif [ "$MY_INIT" = "openrc" ]; then
-	rc-update add NetworkManager
-	rc-update add bluetoothd
-	rc-update add cupsd
+	rc-update add NetworkManager default
+	rc-update add bluetoothd default
+	rc-update add cupsd default
 elif [ "$MY_INIT" = "s6" ]; then
 	s6 set enable dbus elogind NetworkManager bluetoothd cupsd
 	s6 set commit
