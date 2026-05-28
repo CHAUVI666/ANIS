@@ -15,6 +15,8 @@ Primarily I started that fork to force myself into learning shell scripting (and
 
 Login to your live artix iso with root:artix
 
+> If you're on s6, switch to tty2 first (Crtl+Alt+F2), since tty1 will be flooded by s6 logs
+
 `curl -LOk https://github.com/CHAUVI666/ANIS/archive/refs/heads/main.zip`
 
 `pacman -Sy unzip`

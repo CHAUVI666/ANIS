@@ -29,9 +29,7 @@ printf "%s.UTF-8 UTF-8\n" "$LANGCODE" >>/etc/locale.gen
 locale-gen
 printf "LANG=%s.UTF-8\n" "$LANGCODE" >/etc/locale.conf
 printf "KEYMAP=%s\n" "$MY_KEYMAP" >/etc/vconsole.conf
-printf "keymap=%s\n" "$MY_KEYMAP" >/etc/conf.d/keymaps
-
-
+[ "$MY_INIT" = "openrc" ] && printf "keymap=%s\n" "$MY_KEYMAP" >/etc/conf.d/keymaps
 
 # Host stuff
 printf '%s\n' "$MY_HOSTNAME" >/etc/hostname
@@ -83,9 +81,9 @@ elif [ "$MY_INIT" = "openrc" ]; then
 	rc-update add bluetoothd
 	rc-update add cupsd
 elif [ "$MY_INIT" = "s6" ]; then
-	s6 set enable NetworkManager
-	s6 set enable bluetoothd
-	s6 set enable cupsd
+	s6 set enable dbus elogind NetworkManager bluetoothd cupsd
+	s6 set commit
+	s6 live install --init
 fi
 
 # Configure mkinitcpio

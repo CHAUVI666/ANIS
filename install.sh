@@ -46,9 +46,10 @@ MY_INIT="${MY_INIT#*-}"
 [ "$MY_INIT" = "runit" ] && ln -s /etc/runit/sv/ntpd /run/runit/service/
 [ "$MY_INIT" = "openrc" ] && rc-service ntpd start
 [ "$MY_INIT" = "dinit" ] && dinitctl start ntpd
-[ "$MY_INIT" = "s6" ] && s6-rc -v 0 -u change ntpd && clear
+[ "$MY_INIT" = "s6" ] && s6-rc -u change ntpd && clear
 
-# clear second time because of s6 logs lol
+# clear second time because of s6 logs lol 
+# (will probably not be needed as soon as we use whiptai)
 clear
 
 echo "Detected Init: $MY_INIT"
