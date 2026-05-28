@@ -39,7 +39,8 @@ Login to your live artix iso with root:artix
 * ~~reimplement btrfs support~~
 * ~~reimplement encrypted volume~~
 * ~~add BIOS support~~
-* reimplement openrc & dinit support
+* ~~reimplement openrc & dinit support~~
+* ~~add s6 support~~
 
 ### (((PLANNED)))
 

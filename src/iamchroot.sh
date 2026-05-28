@@ -85,6 +85,10 @@ elif [ "$MY_INIT" = "s6" ]; then
 	s6 set enable dbus elogind NetworkManager bluetoothd cupsd
 	s6 set commit
 	s6 live install --init
+elif [ "$MY_INIT" = "dinit" ]; then
+	ln -s /etc/dinit.d/NetworkManager /etc/dinit.d/boot.d/
+	ln -s /etc/dinit.d/cupsd /etc/dinit.d/boot.d/
+	ln -s /etc/dinit.d/bluetoothd /etc/dinit.d/boot.d/
 fi
 
 # Configure mkinitcpio
