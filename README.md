@@ -51,13 +51,11 @@ Login to your live artix iso with root:artix
 > If you're on s6, switch to tty2 first (Ctrl+Alt+F2), since tty1 will be flooded with s6 logs by default.
 
 ```
-$ curl -LOk https://github.com/CHAUVI666/ANIS/archive/refs/heads/main.zip
+$ curl -OL https://github.com/CHAUVI666/ANIS/archive/v0.1.0.tar.gz
 
-$ pacman -Sy unzip
+$ tar -xvf v0.1.0.tar.gz
 
-$ unzip main.zip
-
-$ cd ANIS-main
+$ cd ANIS
 
 $ sh install.sh
 ```

@@ -41,3 +41,15 @@ getDriver(){
 		fi
 	fi
 }
+
+
+# backup from main file
+
+# ROOT_DIR=$(cd "$(dirname "$0")" && pwd)
+# . "$ROOT_DIR/src/gpufetch/gpufetch.sh"
+
+# Check GPU Driver
+# GPU_GEN="$(getGPUGen | awk \{'print int($2)'\})"
+# if [ -n "$GPU_GEN" ]; then
+# 	GPU_DRIVER="$(getDriver)"
+# fi

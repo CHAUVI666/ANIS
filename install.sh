@@ -20,11 +20,6 @@
 # You should have received a copy of the GNU General Public License
 # along with ANIS If not, see <https://www.gnu.org/licenses/>.
 
-# ROOT_DIR=$(cd "$(dirname "$0")" && pwd)
-
-# shellcheck disable=SC1091
-# . "$ROOT_DIR/src/gpufetch/gpufetch.sh"
-
 confirm_password() {
 	stty -echo
 	until [ "$pass1" = "$pass2" ] && [ "$pass2" ]; do
@@ -34,6 +29,26 @@ confirm_password() {
 	stty echo
 	echo "$pass2"
 }
+
+print_hello() {
+	printf "\
+************************************************************\n\
+*                                                          *\n\
+*          ANIS: Artix's Next Installation Script!         *\n\
+*                                                          *\n\
+* This neat little Script will guide you trough the basic  *\n\
+* installation process of Artix.                           *\n\
+* If somethings not working for you as expected, feel free *\n\
+* to open an issue on the projects page.                   *\n\
+* https://github.com/CHAUVI666/ANIS                        *\n\
+*                                                          *\n\
+* Press <Enter> to start :)                                *\n\
+*                                                          *\n\
+************************************************************\n\n"
+	read -r TEMP
+}
+
+clear
 
 # Check boot mode
 BOOTMODE="UEFI"
@@ -46,22 +61,7 @@ MY_INIT="${MY_INIT#*-}"
 [ "$MY_INIT" = "runit" ] && ln -s /etc/runit/sv/ntpd /run/runit/service/
 [ "$MY_INIT" = "openrc" ] && rc-service ntpd start
 [ "$MY_INIT" = "dinit" ] && dinitctl start ntpd
-[ "$MY_INIT" = "s6" ] && s6-rc -u change ntpd && clear
-
-# clear second time because of s6 logs lol 
-# (will probably not be needed as soon as we use whiptai)
-clear
-
-echo "Detected Init: $MY_INIT"
-
-# Check init system
-# [ ! -d /etc/runit ] && printf "wrong init, this script is ONLY for RUNIT!\n" && exit 1
-
-# Check GPU Driver
-# GPU_GEN="$(getGPUGen | awk \{'print int($2)'\})"
-# if [ -n "$GPU_GEN" ]; then
-# 	GPU_DRIVER="$(getDriver)"
-# fi
+[ "$MY_INIT" = "s6" ] && s6-rc -u change ntpd
 
 # Language
 LANGCODE="${LANG%%.*}"
@@ -74,6 +74,9 @@ MY_KEYMAP="$KEYMAP"
 # Timezone
 LT_PATH=$(realpath /etc/localtime)
 REGION_CITY="${LT_PATH#*zoneinfo/}"
+
+# Hello
+print_hello
 
 # Choose disk
 until [ -b "$MY_DISK" ]; do
@@ -108,7 +111,7 @@ done
 
 # Choose filesystem
 until [ "$MY_FS" = "1" ] || [ "$MY_FS" = "2" ]; do
-	printf "Choose filesystem\n(1) btrfs\n(2) ext4\ndefault (1): " && read -r MY_FS
+	printf "\nChoose filesystem\n(1) btrfs\n(2) ext4\ndefault (1): " && read -r MY_FS
 	[ ! "$MY_FS" ] && MY_FS="1"
 done
 [ "$MY_FS" = "1" ] && MY_FS="btrfs"
@@ -139,7 +142,7 @@ until [ "$MY_HOSTNAME" ]; do
 done
 
 # Users
-printf "\nUsername: " && read -r USERNAME
+printf "Username: " && read -r USERNAME
 
 # Thanks to LARBS.xyz
 while ! echo "$USERNAME" | grep -q "^[a-z_][a-z0-9_-]*$"; do
@@ -159,7 +162,11 @@ else
 	ROOT_PASSWORD=$(confirm_password "Root password")
 fi
 
-printf "\nDone with configuration. Installing...\n\n"
+printf "\nDone with configuration.\n\
+Press <Enter> to begin with the installation, or <Ctrl+C> to abort it.\n\n"
+
+# shellcheck disable=SC2034
+read -r TEMP
 
 # Install
 sudo MY_INIT="$MY_INIT" MY_DISK="$MY_DISK" PART1="$PART1" PART2="$PART2" \

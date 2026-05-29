@@ -4,3 +4,5 @@ Session.vim
 notes.md
 *.sh2
 *.tar
+tmp
+tmp/*
