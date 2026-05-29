@@ -1,3 +1,9 @@
+2026-05-29
+RELEASE DAY BABY! I know nobody will notice since I've never talked
+about this project on any forum, but first release is reason enough
+for me to celebrate another day. YIPPIE :>
+
+
 2026-05-28
 finally got the installer to run with s6, realized the artix wiki
 was outdated, but at least the dinit implementation afterwards was
@@ -7,6 +13,7 @@ now that i ticked off everything that was on prio 1 for me I gotta
 decide what things i should target next. but maybe thats something 
 for tomorrow. 
 guess i'll order pizza with fries later to celebrate my bday :>
+
 
 2026-05-27
 was wondering why s6 dumps all the logs into my terminal until
@@ -19,6 +26,7 @@ i looked up the artix wiki
 yeah, kinda annoying for ANIS since prompts will easily be overlooked, 
 but i think people are smart enough to switch to tty2 if i say so
 in the README
+
 
 2026-05-22
 Today I thought of prioritising the basic install process. Making
