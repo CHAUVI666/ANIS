@@ -96,7 +96,7 @@ fi
 if [ "$ENCRYPTED" = "y" ]; then
 	sed -i 's/^HOOKS.*$/HOOKS=(base udev autodetect keyboard keymap modconf block encrypt resume filesystems fsck)/g' /etc/mkinitcpio.conf
 else
-	sed -i 's/^HOOKS.*$/HOOKS=(base udev autodetect keyboard keymap modconf block resume filesystems fsck)/g' /etc/mkinitcpio.conf
+	sed -i 's/^HOOKS.*$/HOOKS=(base udev autodetect keyboard keymap modconf block resume lvm filesystems fsck)/g' /etc/mkinitcpio.conf
 fi
 
 mkinitcpio -P

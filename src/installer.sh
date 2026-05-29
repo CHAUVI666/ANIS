@@ -25,6 +25,8 @@ wipefs -a "$MY_DISK"
 [ "$BOOTMODE" = "UEFI" ] && printf "label: gpt\n,512M,U\n,,\n" | sfdisk "$MY_DISK"
 [ "$BOOTMODE" = "BIOS" ] && printf "label: dos\n,512M,L,*\n,,\n" | sfdisk "$MY_DISK"
 
+exit 
+
 # Format and mount partitions
 if [ "$ENCRYPTED" = "y" ]; then
 	yes "$CRYPTPASS" | cryptsetup -q luksFormat "$PART2"

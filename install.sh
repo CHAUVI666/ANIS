@@ -174,6 +174,8 @@ sudo MY_INIT="$MY_INIT" MY_DISK="$MY_DISK" PART1="$PART1" PART2="$PART2" \
 	CRYPTPASS="$CRYPTPASS" BOOTMODE="$BOOTMODE" \
 	./src/installer.sh
 
+exit 
+
 # Chroot
 sudo cp src/iamchroot.sh /mnt/root/ &&
 	sudo MY_INIT="$MY_INIT" PART2="$PART2" MY_FS="$MY_FS" ENCRYPTED="$ENCRYPTED" \
