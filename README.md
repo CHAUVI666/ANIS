@@ -55,7 +55,7 @@ $ curl -OL https://github.com/CHAUVI666/ANIS/archive/v0.1.0.tar.gz
 
 $ tar -xvf v0.1.0.tar.gz
 
-$ cd ANIS
+$ cd ANIS-0.1.0
 
 $ sh install.sh
 ```
