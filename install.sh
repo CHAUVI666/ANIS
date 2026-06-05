@@ -48,6 +48,21 @@ print_hello() {
 	read -r TEMP
 }
 
+print_overview() {
+    printf "[ SYSTEM ]\n"
+	printf "%-15.15s%25.25s\t\t%-15.15s%25.25s\n" "Boot" $BOOTMODE "Init" "$MY_INIT"
+	printf "%-15.15s%25.25s\t\t%-15.15s%25.25s\n" "Drive" "$MY_DISK" "File System" "$MY_FS"
+	printf "%-15.15s%25.25s\t\t%-15.15s%25.25s\n" "Swapfile" "Yes" "Swap Size" "${SWAP_SIZE}G"
+	printf "%-15.15s%25.25s\n" "Encrypted" "$( [ "$ENCRYPTED" = "n" ] && echo "No" )$( [ "$ENCRYPTED" = "y" ] && echo "Yes")"
+
+    printf "\n[ LOCAL CONFIGURATION ]\n"
+    printf "%-15.15s%25.25s\t\t%-15.15s%25.25s\n" "Hostname" "$MY_HOSTNAME" "Region" "$REGION_CITY"
+    printf "%-15.15s%25.25s\t\t%-15.15s%25.25s\n" "Language" "$LANGCODE" "Keymap" "$MY_KEYMAP"
+
+    printf "\n[ USERS ]\n"
+    printf "%-15.15s%25.25s\t\t%-15.15s%25.25s\n" "Name" "$USERNAME" "Sudo" "Yes"
+}
+
 clear
 
 # Check boot mode
@@ -107,7 +122,7 @@ until [ "$CONFIRM" ]; do
 	[ ! "$CONFIRM" ] && CONFIRM="n"
 done
 
-[ ! "$CONFIRM" = "y" ] && printf "Installation aborted by user. Nothing was changed.\n" && exit 1
+[ ! "$CONFIRM" = "y" ] && [ ! "$CONFIRM" = "Y" ] && printf "Installation aborted by user. Nothing was changed.\n" && exit 1
 
 # Choose filesystem
 until [ "$MY_FS" = "1" ] || [ "$MY_FS" = "2" ]; do
@@ -123,17 +138,19 @@ until [ "$ENCRYPTED" ]; do
 	[ ! "$ENCRYPTED" ] && ENCRYPTED="n"
 done
 
-if [ "$ENCRYPTED" = "y" ]; then
-	MY_ROOT="/dev/mapper/root"
+if [ "$ENCRYPTED" = "y" ] || [ "$ENCRYPTED" = "Y" ]; then
+    MY_ROOT="/dev/mapper/root"
 	CRYPTPASS=$(confirm_password "encryption password")
+    ENCRYPTED="y"
 else
-	MY_ROOT=$PART2
+    MY_ROOT=$PART2
+	ENCRYPTED="n"
 	# ??? what was the intention behind that
 	# [ "$MY_FS" = "ext4" ] && MY_ROOT=$PART2
 fi
 
-# Swap size (same as RAM size for hibernation)
-SWAP_SIZE=$(free -m | awk '/^Mem:/ {print int($2/1024 + 0.5)}')
+# Swap size (1.5x RAM size for hibernation)
+SWAP_SIZE=$(free -m | awk '/^Mem:/ {print int($2/1024 * 1.5)}')
 [ "$SWAP_SIZE" -lt 4 ] && SWAP_SIZE=4
 
 # Host
@@ -151,19 +168,25 @@ while ! echo "$USERNAME" | grep -q "^[a-z_][a-z0-9_-]*$"; do
 done
 USER_PASSWORD=$(confirm_password "$USERNAME password")
 
+
 until [ "$SAME_PASS" ]; do
 	printf "Use same password for root? (y/N): " && read -r SAME_PASS
 	[ ! "$SAME_PASS" ] && SAME_PASS="n"
 done
 
-if [ "$SAME_PASS" = "y" ]; then
-	ROOT_PASSWORD=$USER_PASSWORD
+if [ "$SAME_PASS" = "y" ] || [ "$SAME_PASS" = "Y" ]; then
+    ROOT_PASSWORD=$USER_PASSWORD
+	SAME_PASS="y"
 else
-	ROOT_PASSWORD=$(confirm_password "Root password")
+    ROOT_PASSWORD=$(confirm_password "Root password")
+    SAME_PASS="n"
 fi
 
-printf "\nDone with configuration.\n\
-Press <Enter> to begin with the installation, or <Ctrl+C> to abort it.\n\n"
+clear
+
+printf "\nDone with configuration.\n\n"
+print_overview
+printf "\nPress <Enter> to begin with the installation, or <Ctrl+C> to abort it.\n\n"
 
 # shellcheck disable=SC2034
 read -r TEMP
