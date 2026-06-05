@@ -30,6 +30,23 @@ confirm_password() {
 	echo "$pass2"
 }
 
+add_user(){
+    # Thanks to LARBS.xyz
+    unset "$USERNAME"
+
+    printf "Username: " && read -r USERNAME
+
+    while ! echo "$USERNAME" | grep -q "^[a-z_][a-z0-9_-]*$"; do
+        printf "Username not valid. Give a username beginning with a letter, with only lowercase letters, - or _.\n"
+        printf "\nUsername: " && read -r USERNAME
+    done
+
+    USER_PASSWORD=$(confirm_password "$USERNAME password")
+
+    USERNAMES="$USERNAMES $USERNAME"
+    USER_PASSWORDS="$USER_PASSWORDS $USER_PASSWORD"
+}
+
 print_hello() {
 	printf "\
 ************************************************************\n\
@@ -158,29 +175,47 @@ until [ "$MY_HOSTNAME" ]; do
 	printf "\nHostname: " && read -r MY_HOSTNAME
 done
 
+
 # Users
-printf "Username: " && read -r USERNAME
+until [ "$NEW_USER" = "n" ]; do
+    unset "$NEW_USER"
+    printf "\nAdd new user? (y/n): " && read -r NEW_USER
 
-# Thanks to LARBS.xyz
-while ! echo "$USERNAME" | grep -q "^[a-z_][a-z0-9_-]*$"; do
-	printf "Username not valid. Give a username beginning with a letter, with only lowercase letters, - or _.\n"
-	printf "\nUsername: " && read -r USERNAME
-done
-USER_PASSWORD=$(confirm_password "$USERNAME password")
-
-
-until [ "$SAME_PASS" ]; do
-	printf "Use same password for root? (y/N): " && read -r SAME_PASS
-	[ ! "$SAME_PASS" ] && SAME_PASS="n"
+    until [ "$NEW_USER" = "y" ] || [ "$NEW_USER" = "n" ]; do
+        NEW_USER=$(echo "$NEW_USER" | awk '{print tolower($0)}')
+    done
+    [ "$NEW_USER" = "y" ] && add_user
 done
 
-if [ "$SAME_PASS" = "y" ] || [ "$SAME_PASS" = "Y" ]; then
-    ROOT_PASSWORD=$USER_PASSWORD
-	SAME_PASS="y"
-else
+IFS=" "
+i=1
+for user in $USERNAMES; do
+    echo "Username: $user | Password: $(echo "$USER_PASSWORDS" | awk -v i=$i \{'print $i'\})"
+    i=$((i+1))
+done
+
+#######
+# printf "Username: " && read -r USERNAME
+
+# # Thanks to LARBS.xyz
+# while ! echo "$USERNAME" | grep -q "^[a-z_][a-z0-9_-]*$"; do
+# 	printf "Username not valid. Give a username beginning with a letter, with only lowercase letters, - or _.\n"
+# 	printf "\nUsername: " && read -r USERNAME
+# done
+# USER_PASSWORD=$(confirm_password "$USERNAME password")
+
+
+# until [ "$SAME_PASS" ]; do
+# 	printf "Use same password for root? (y/N): " && read -r SAME_PASS
+# 	[ ! "$SAME_PASS" ] && SAME_PASS="n"
+# done
+
+# if [ "$SAME_PASS" = "y" ] || [ "$SAME_PASS" = "Y" ]; then
+#     ROOT_PASSWORD=$USER_PASSWORD
+# 	SAME_PASS="y"
+# else
     ROOT_PASSWORD=$(confirm_password "Root password")
-    SAME_PASS="n"
-fi
+# fi
 
 clear
 
@@ -191,6 +226,7 @@ printf "\nPress <Enter> to begin with the installation, or <Ctrl+C> to abort it.
 # shellcheck disable=SC2034
 read -r TEMP
 
+exit
 # Install
 sudo MY_INIT="$MY_INIT" MY_DISK="$MY_DISK" PART1="$PART1" PART2="$PART2" \
 	SWAP_SIZE="$SWAP_SIZE" MY_FS="$MY_FS" ENCRYPTED="$ENCRYPTED" MY_ROOT="$MY_ROOT" \

@@ -101,7 +101,7 @@ case $(grep vendor /proc/cpuinfo) in
 	;;
 esac
 
-set -- # investigate this
+set --
 IFS=" "
 for pkg in $pkgs; do
 	set -- "$@" "$pkg"
