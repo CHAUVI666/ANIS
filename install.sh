@@ -48,6 +48,14 @@ print_hello() {
 	read -r TEMP
 }
 
+print_overview() {
+	printf "[ SYSTEM ]\n"
+	printf "%-15s%15s\t\t%-15s%15s\n" "Boot" $BOOTMODE "Init" "$MY_INIT"
+	printf "%-15s%15s\t\t%-15s%15s\n" "Drive" "$MY_DISK" "File System" "$MY_FS"
+	printf "%-15s%15s\t\t%-15s%15s\n" "Swapfile" "Yes" "Swap Size" "$SWAP_SIZE"
+	printf "%-15s%15s\n" "Encrypted" "$ENCRYPTED"
+}
+
 clear
 
 # Check boot mode
@@ -58,6 +66,7 @@ BOOTMODE="UEFI"
 MY_INIT="$(cat /etc/os-release | grep "VARIANT")"
 MY_INIT="${MY_INIT#*-}"
 
+MY_INIT="runit"
 [ "$MY_INIT" = "runit" ] && ln -s /etc/runit/sv/ntpd /run/runit/service/
 [ "$MY_INIT" = "openrc" ] && rc-service ntpd start
 [ "$MY_INIT" = "dinit" ] && dinitctl start ntpd
@@ -128,6 +137,7 @@ if [ "$ENCRYPTED" = "y" ]; then
 	CRYPTPASS=$(confirm_password "encryption password")
 else
 	MY_ROOT=$PART2
+	ENCRYPTED="n"
 	# ??? what was the intention behind that
 	# [ "$MY_FS" = "ext4" ] && MY_ROOT=$PART2
 fi
@@ -162,8 +172,11 @@ else
 	ROOT_PASSWORD=$(confirm_password "Root password")
 fi
 
-printf "\nDone with configuration.\n\
-Press <Enter> to begin with the installation, or <Ctrl+C> to abort it.\n\n"
+clear
+
+printf "\nDone with configuration.\n\n"
+print_overview
+printf "\nPress <Enter> to begin with the installation, or <Ctrl+C> to abort it.\n\n"
 
 # shellcheck disable=SC2034
 read -r TEMP
