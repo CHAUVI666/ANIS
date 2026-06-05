@@ -138,14 +138,15 @@ until [ "$ENCRYPTED" ]; do
 	[ ! "$ENCRYPTED" ] && ENCRYPTED="n"
 done
 
-if [ ! "$ENCRYPTED" = "y" ] || [ ! "$ENCRYPTED" = "Y" ]; then
-	MY_ROOT=$PART2
+if [ "$ENCRYPTED" = "y" ] || [ "$ENCRYPTED" = "Y" ]; then
+    MY_ROOT="/dev/mapper/root"
+	CRYPTPASS=$(confirm_password "encryption password")
+    ENCRYPTED="y"
+else
+    MY_ROOT=$PART2
 	ENCRYPTED="n"
 	# ??? what was the intention behind that
 	# [ "$MY_FS" = "ext4" ] && MY_ROOT=$PART2
-else
-	MY_ROOT="/dev/mapper/root"
-	CRYPTPASS=$(confirm_password "encryption password")
 fi
 
 # Swap size (1.5x RAM size for hibernation)
