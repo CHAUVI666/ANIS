@@ -148,8 +148,8 @@ else
 	CRYPTPASS=$(confirm_password "encryption password")
 fi
 
-# Swap size (same as RAM size for hibernation)
-SWAP_SIZE=$(free -m | awk '/^Mem:/ {print int($2/1024 + 0.5)}')
+# Swap size (1.5x RAM size for hibernation)
+SWAP_SIZE=$(free -m | awk '/^Mem:/ {print int($2/1024 * 1.5)}')
 [ "$SWAP_SIZE" -lt 4 ] && SWAP_SIZE=4
 
 # Host
@@ -173,12 +173,12 @@ until [ "$SAME_PASS" ]; do
 	[ ! "$SAME_PASS" ] && SAME_PASS="n"
 done
 
-if [ ! "$SAME_PASS" = "y" ] || [ ! "$SAME_PASS" = "Y" ]; then
-	ROOT_PASSWORD=$(confirm_password "Root password")
-else
-	ROOT_PASSWORD=$USER_PASSWORD
+if [ "$SAME_PASS" = "y" ] || [ "$SAME_PASS" = "Y" ]; then
+    ROOT_PASSWORD=$USER_PASSWORD
 	SAME_PASS="y"
-	
+else
+    ROOT_PASSWORD=$(confirm_password "Root password")
+    SAME_PASS="n"
 fi
 
 clear
